@@ -1,0 +1,32 @@
+
+    {
+    "id": "112",
+    "name": "Zika Virus",
+    "description": "Zika virus disease is caused by a virus transmitted primarily by Aedes mosquitoes, which bite during the day. Symptoms are generally mild and include fever, rash, and joint pain. However, a Zika virus infection during pregnancy is a serious concern as it can cause a severe birth defect called microcephaly (a condition where a baby's head is much smaller than expected) and other congenital abnormalities. The virus can also be transmitted through sexual contact. There is no specific treatment or vaccine currently available.",
+    "symptoms": [
+      "Many people infected with Zika virus won't have symptoms or will only have mild ones",
+      "Mild fever and skin rash",
+      "Conjunctivitis (red eyes)",
+      "Muscle and joint pain",
+      "Headache and general feeling of unease (malaise)",
+      "Symptoms usually last for 2–7 days"
+    ],
+    "prevention": [
+      "Protect against mosquito bites, especially during the day. Use insect repellents, wear long-sleeved shirts and long pants, and stay in places with air conditioning or window screens",
+      "Control mosquito populations by eliminating breeding sites (e.g., emptying standing water from containers)",
+      "Pregnant women or those planning pregnancy should avoid traveling to areas with a risk of Zika",
+      "Practice safe sex (use condoms) to prevent sexual transmission, especially if a partner has traveled to an area with Zika"
+    ],
+    "treatment": [
+      "There is no specific medicine or vaccine for Zika virus",
+      "Treat the symptoms: get plenty of rest, drink fluids to prevent dehydration, and take medicine such as acetaminophen to reduce fever and pain",
+      "Avoid aspirin and other non-steroidal anti-inflammatory drugs (NSAIDs) until dengue can be ruled out to reduce the risk of bleeding",
+      "People infected with Zika should protect themselves from further mosquito bites during the first week of illness to prevent spreading the virus to more mosquitoes"
+    ],
+    "category": "Viral",
+    "image": "images/diseases/Zika_Virus.jpg",
+    "when_to_consult_a_doctor": "Consult if pregnant and exposed, or if symptoms develop after travel.",
+    "common_tests_advised": "RT-PCR (Blood/Urine), IgM serology.",
+    "symptoms_that_should_not_be_ignored": "Neurological symptoms (Guillain-Barre syndrome risk) or severe joint pain.",
+    "Verification Status": "Verified"
+  }

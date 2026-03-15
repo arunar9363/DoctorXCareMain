@@ -11,6 +11,9 @@ import infermedicaRoutes from './routes/Infermedica.routes.js'
 import chatRoutes        from './routes/chat.routes.js'
 import diseaseRoutes     from './routes/disease.routes.js'
 import feedbackRoutes    from './routes/feedback.routes.js'
+import savedDiseaseRoutes  from './routes/savedDisease.routes.js'
+import labReportRoutes     from './routes/labReport.routes.js'
+import healthTrackingRoutes from './routes/healthTracking.routes.js'
 
 dotenv.config()
 connectDB()
@@ -28,6 +31,9 @@ app.use('/api/infermedica', infermedicaRoutes)
 app.use('/api/chat',        chatRoutes)
 app.use('/api/diseases',    diseaseRoutes)
 app.use('/api/feedbacks',   feedbackRoutes)
+app.use('/api/saved-diseases',   savedDiseaseRoutes)
+app.use('/api/lab-reports',      labReportRoutes)
+app.use('/api/health-tracking',  healthTrackingRoutes)
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() })

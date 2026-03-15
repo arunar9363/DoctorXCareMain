@@ -1,12 +1,20 @@
 import mongoose from 'mongoose'
 import dotenv from 'dotenv'
 import { readFileSync } from 'fs'
-import Disease from '../models/Disease.js'
+import { fileURLToPath } from 'url'
+import { dirname, join } from 'path'
+import Disease from './Disease.js'
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
 
-dotenv.config()
+dotenv.config({ path: join(__dirname, '../../.env') })
+
 await mongoose.connect(process.env.MONGO_URI)
 
-const diseases = JSON.parse(readFileSync('./diseases.json', 'utf-8'))
+// disease.json is in src/models/ folder
+const diseases = JSON.parse(
+  readFileSync(join(__dirname, './disease.json'), 'utf-8')
+)
 
 for (const d of diseases) {
   await Disease.findOneAndUpdate(
@@ -15,5 +23,6 @@ for (const d of diseases) {
     { upsert: true, new: true }
   )
 }
+
 console.log(`Seeded ${diseases.length} diseases`)
 await mongoose.disconnect()
