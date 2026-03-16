@@ -1,0 +1,12 @@
+fastapi
+uvicorn[standard]
+phidata
+google-generativeai
+google-genai
+python-multipart
+duckduckgo-search
+python-dotenv
+pydantic
+pillow
+phi
+httpx

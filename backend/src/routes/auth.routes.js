@@ -1,6 +1,6 @@
 import express from 'express'
 import crypto from 'crypto'
-import User from '../models/user.js'
+import User from '../models/User.js'
 import generateToken from '../utils/generateToken.js'
 import { sendOTPEmail } from '../config/email.js'
 import { verifyGoogleToken } from '../config/google.js'
