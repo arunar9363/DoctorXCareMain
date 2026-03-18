@@ -1,7 +1,7 @@
 import os
-from phi.agent import Agent
-from phi.model.google import Gemini
-from phi.tools.duckduckgo import DuckDuckGo
+from agno.agent import Agent
+from agno.models.google import Gemini
+from agno.tools.duckduckgo import DuckDuckGoTools
 from dotenv import load_dotenv
 from medical_guidelines import (
     BP_RANGES, GLUCOSE_RANGES, THYROID_RANGES,
@@ -17,7 +17,7 @@ def get_medical_agent():
 
     return Agent(
         model=Gemini(id="gemini-2.5-flash", api_key=api_key),
-        tools=[DuckDuckGo()],
+        tools=[DuckDuckGoTools()],
         markdown=True,
         name="DoctorXCare Medical Lab Analyst",
         description=(
@@ -92,9 +92,9 @@ def get_medical_agent():
         ]
     )
 import os
-from phi.agent import Agent
-from phi.model.google import Gemini
-from phi.tools.duckduckgo import DuckDuckGo
+from agno.agent import Agent
+from agno.models.google import Gemini
+from agno.tools.duckduckgo import DuckDuckGoTools
 from dotenv import load_dotenv
 from medical_guidelines import (
     BP_RANGES, GLUCOSE_RANGES, THYROID_RANGES,
@@ -110,7 +110,7 @@ def get_medical_agent():
 
     return Agent(
         model=Gemini(id="gemini-2.5-flash", api_key=api_key),
-        tools=[DuckDuckGo()],
+        tools=[DuckDuckGoTools()],
         markdown=True,
         name="DoctorXCare Medical Lab Analyst",
         description=(
