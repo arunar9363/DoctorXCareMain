@@ -1,121 +1,126 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { BrowserRouter as Router, Routes, Route, Outlet, Navigate } from "react-router-dom";
+import "bootstrap/dist/css/bootstrap.min.css";
+import "./App.css";
 
-function App() {
-  const [count, setCount] = useState(0)
+// ✅ Firebase hata ke AuthContext use kar rahe hain
+import useAuth from "./hooks/useAuth";
 
+// Components
+import Navbar from "./components/common/Navbar";
+import Footer from "./components/common/Footer";
+import LoginModal from "./components/common/LoginModal";
+import ScrollToTop from "./components/common/ScrollToTop";
+import Audience from "./components/sections/Audience";
+import About from "./components/sections/AboutUs";
+import Services from "./components/features/ServiceList";
+import DiseaseSearch from "./components/features/DiseaseSearch";
+import IndividualDiseasesInfo from "./components/features/IndividualDiseaseInfo";
+import InfermedicaTriageSymptomChecker from "./components/features/InfermedicaTriageSymptomChecker";
+import LabUpload from "./components/features/ai-agents/LabAnalysis/LabUpload";
+import ChronicCareLanding from "./components/features/ai-agents/HealthTracking/ChronicCareLanding";
+import Charts from "./components/features/ai-agents/HealthTracking/Charts";
+import TrackerDashboard from "./components/features/ai-agents/HealthTracking/TrackerDashboard";
+import FinderMap from "./components/features/ai-agents/SpecialistFinder/FinderMap";
+
+// Pages
+import Home from "./pages/Home";
+import ContactPage from "./pages/ContactUsPage";
+import SymptomPage from "./pages/SymptomPage";
+import RegisterPage from "./pages/RegisterPage";
+import TermsOfService from "./pages/TermsOfService";
+import DoctorXAIPage from "./pages/DoctorXAIPage";
+import HistoryPage from "./pages/HistoryPage";
+import ForgotPassword from "./pages/ForgotPassword";
+import Dashboard from "./pages/Dashboard";
+import ProfilePage from "./pages/ProfilePage";
+
+
+// ✅ ProtectedRouter — Firebase useAuthState → useAuth (AuthContext)
+const ProtectedRouter = () => {
+  const { user, loading } = useAuth()
+
+  if (loading) {
+    return (
+      <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100vh',
+        fontSize: '18px',
+        color: 'var(--color-secondary)'
+      }}>
+        Loading...
+      </div>
+    )
+  }
+
+  return user ? <Outlet /> : <Navigate to="/" replace />
+}
+
+// Login Modal Wrapper
+function LoginPageWrapper() {
+  return <LoginModal show={true} onClose={() => { }} />
+}
+
+// Layout Wrapper
+function Layout({ children }) {
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
-
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+    <div className="landing-page">
+      <Navbar />
+      {children}
+      <Footer />
+    </div>
   )
 }
 
-export default App
+function App() {
+  return (
+    <Router>
+      <ScrollToTop />
+      <Layout>
+        <Routes>
+
+          {/* ── PUBLIC ROUTES ─────────────────────────────── */}
+          <Route path="/" element={<Home />} />
+          <Route path="/audience" element={<Audience />} />
+          <Route path="/aboutus" element={<About />} />
+          <Route path="/contact" element={<ContactPage />} />
+          <Route path="/login" element={<LoginPageWrapper />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/terms" element={<TermsOfService />} />
+          <Route path="/history" element={<HistoryPage />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/healthcare-network" element={<FinderMap />} />
+
+          {/* ── PROTECTED ROUTES ──────────────────────────── */}
+          <Route element={<ProtectedRouter />}>
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/services" element={<Services />} />
+            <Route path="/diseases" element={<DiseaseSearch />} />
+            <Route path="/diseases/:diseaseName" element={<IndividualDiseasesInfo />} />
+            <Route path="/symptoms" element={<SymptomPage />} />
+            <Route
+              path="/symptom-checker"
+              element={
+                <InfermedicaTriageSymptomChecker
+                  apiBaseUrl="/api"
+                  authHeaders={{}}
+                  language="en"
+                />
+              }
+            />
+            <Route path="/lab-analysis" element={<LabUpload />} />
+            <Route path="/health-tracking/chronic-care" element={<ChronicCareLanding />} />
+            <Route path="/health-tracking/charts" element={<Charts />} />
+            <Route path="/health-tracking/dashboard" element={<TrackerDashboard />} />
+            <Route path="/doctorx-ai" element={<DoctorXAIPage />} />
+          </Route>
+
+        </Routes>
+      </Layout>
+    </Router>
+  )
+}
+
+export default App;
