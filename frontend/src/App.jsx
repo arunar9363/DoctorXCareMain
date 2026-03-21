@@ -2,8 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Outlet, Navigate } from "react-
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./App.css";
 
-// ✅ Firebase hata ke AuthContext use kar rahe hain
-import useAuth from "./hooks/useAuth";
+import { useAuth } from "./context/AuthContext.jsx";
 
 // Components
 import Navbar from "./components/common/Navbar";
@@ -34,10 +33,9 @@ import ForgotPassword from "./pages/ForgotPassword";
 import Dashboard from "./pages/Dashboard";
 import ProfilePage from "./pages/ProfilePage";
 
-
-// ✅ ProtectedRouter — Firebase useAuthState → useAuth (AuthContext)
+// ── ProtectedRouter — JWT AuthContext ─────────────────────────────────────────
 const ProtectedRouter = () => {
-  const { user, loading } = useAuth()
+  const { user, loading } = useAuth();
 
   if (loading) {
     return (
@@ -51,15 +49,15 @@ const ProtectedRouter = () => {
       }}>
         Loading...
       </div>
-    )
+    );
   }
 
-  return user ? <Outlet /> : <Navigate to="/" replace />
-}
+  return user ? <Outlet /> : <Navigate to="/" replace />;
+};
 
 // Login Modal Wrapper
 function LoginPageWrapper() {
-  return <LoginModal show={true} onClose={() => { }} />
+  return <LoginModal show={true} onClose={() => { }} />;
 }
 
 // Layout Wrapper
@@ -70,7 +68,7 @@ function Layout({ children }) {
       {children}
       <Footer />
     </div>
-  )
+  );
 }
 
 function App() {
@@ -95,24 +93,25 @@ function App() {
           {/* ── PROTECTED ROUTES ──────────────────────────── */}
           <Route element={<ProtectedRouter />}>
             <Route path="/dashboard" element={<Dashboard />} />
+
+            {/* Profile — Dashboard uses navigate('/my-profile') */}
+            <Route path="/my-profile" element={<ProfilePage />} />
             <Route path="/profile" element={<ProfilePage />} />
+
             <Route path="/services" element={<Services />} />
             <Route path="/diseases" element={<DiseaseSearch />} />
             <Route path="/diseases/:diseaseName" element={<IndividualDiseasesInfo />} />
             <Route path="/symptoms" element={<SymptomPage />} />
+
+            {/* apiBaseUrl prop removed — InfermedicaTriageSymptomChecker now uses axios internally */}
             <Route
               path="/symptom-checker"
-              element={
-                <InfermedicaTriageSymptomChecker
-                  apiBaseUrl="/api"
-                  authHeaders={{}}
-                  language="en"
-                />
-              }
+              element={<InfermedicaTriageSymptomChecker />}
             />
+
             <Route path="/lab-analysis" element={<LabUpload />} />
             <Route path="/health-tracking/chronic-care" element={<ChronicCareLanding />} />
-            <Route path="/health-tracking/charts" element={<Charts />} />
+            <Route path="/health-tracking/charts" element={<Charts patientData={[]} />} />
             <Route path="/health-tracking/dashboard" element={<TrackerDashboard />} />
             <Route path="/doctorx-ai" element={<DoctorXAIPage />} />
           </Route>
@@ -120,7 +119,7 @@ function App() {
         </Routes>
       </Layout>
     </Router>
-  )
+  );
 }
 
 export default App;

@@ -15,6 +15,8 @@ import feedbackRoutes       from './routes/feedback.routes.js'
 import savedDiseaseRoutes   from './routes/savedDisease.routes.js'
 import labReportRoutes      from './routes/labReport.routes.js'
 import healthTrackingRoutes from './routes/healthTracking.routes.js'
+import assessmentRoutes from './routes/assessment.routes.js'
+app.use('/api/assessments', assessmentRoutes)
 
 dotenv.config()
 connectDB()
