@@ -1,0 +1,228 @@
+    .footer {
+      background: var(--color-dark);
+      padding: 60px 20px 40px;
+      font-family: "Inter", sans-serif;
+      border-top: 1px solid #e5e5e5;
+    }
+
+    /* Main footer content */
+    .footer-content {
+      width: 100%;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1.5fr;
+      gap: 40px;
+      margin-bottom: 50px;
+    }
+
+    /* Company info section with logo */
+    .company-info {
+      padding-right: 40px;
+      margin-left: 20%;
+    }
+
+    .logo-container {
+      margin-bottom: 20px;
+    }
+
+    .logo-placeholder {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo-circle {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, #de21be, #c330dd);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+      font-size: 18px;
+    }
+
+    .logo-text {
+      font-size: 24px;
+      font-weight: bold;
+      color: var(--color-secondary);
+    }
+
+    .company-info .copyright {
+      font-size: 0.9rem;
+      color: var(--color-primary);
+      margin: 0 0 5px 0;
+    }
+
+    .company-info .rights {
+      font-size: 0.9rem;
+      color: var(--color-primary);
+      margin: 0 0 25px 0;
+    }
+
+    /* Social media icons */
+    .social-icons {
+      display: flex;
+      gap: 15px;
+    }
+
+    .social-icons a {
+      width: 35px;
+      height: 35px;
+      background: #f8f9fa;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--color-primary);
+      text-decoration: none;
+      transition: all 0.3s ease;
+      border: 1px solid #e9ecef;
+    }
+
+    .social-icons a:hover {
+      background: #de21be;
+      color: white;
+      border-color: #de21be;
+      transform: translateY(-2px);
+    }
+
+    .social-icons a i {
+      font-size: 16px;
+    }
+
+    /* Footer sections */
+    .footer-section h4 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 20px;
+      color:var(--color-secondary);
+    }
+
+    .footer-section p {
+      font-size: 0.9rem;
+      line-height: 1.6;
+      color:var(--color-primary);
+      margin-bottom: 12px;
+    }
+
+    .footer-section .address {
+      margin-bottom: 15px;
+    }
+
+    .footer-section .contact-info {
+      margin-bottom: 8px;
+    }
+
+    .footer-section .contact-info a {
+      color: var(--color-secondary);
+      text-decoration: none;
+    }
+
+    .footer-section .contact-info a:hover {
+      text-decoration: underline;
+    }
+
+    /* Quick links */
+    .footer-section ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .footer-section ul li {
+      margin-bottom: 5px;
+    }
+
+    .footer-section ul li a {
+      color:var(--color-primary);
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: color 0.2s;
+    }
+
+    .footer-section ul li a:hover {
+      color: var(--color-secondary);
+    }
+
+    .footer-section a {
+      color: var(--color-primary)
+    }
+    .footer-section a:hover {
+      color: var(--color-secondary)
+    }
+
+    /* Legal links */
+    .legal-links {
+      margin-top: 9px;
+    }
+
+    .legal-links a {
+      color: var(--color-secondary);
+      text-decoration: none;
+      font-size: 0.9rem;
+      margin-right: 15px;
+      display: inline-block;
+      margin-bottom: 5px;
+    }
+
+    .legal-links a:hover {
+      text-decoration: underline;
+    }
+
+    /* Disclaimer section */
+    .disclaimer {
+      width: 100%;
+      margin: 0 auto;
+      padding-top: 20px;
+      border-top: 1px solid #e5e5e5;
+    }
+
+    .disclaimer h4 {
+      margin-left: 2%;
+      margin-right: 2%;
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 15px;
+      color: var(--color-secondary);
+    }
+
+    .disclaimer p {
+      margin-left: 2%;
+      margin-right: 2%;
+      font-size: 0.9rem;
+      line-height: 1.6;
+      margin-bottom: 15px;
+      color: var(--color-primary);
+    }
+
+    /* Responsive design */
+    @media (max-width: 768px) {
+      .footer-content {
+        grid-template-columns: 1fr;
+        gap: 30px;
+      }
+      
+      .company-info {
+        padding-right: 0;
+      }
+      
+      .footer {
+        padding: 40px 20px 30px;
+      }
+      
+      .legal-links a {
+        display: block;
+        margin-right: 0;
+        margin-bottom: 8px;
+      }
+    }
+
+    @media (max-width: 1024px) and (min-width: 769px) {
+      .footer-content {
+        grid-template-columns: 1fr 1fr;
+        gap: 40px;
+      }
+    }

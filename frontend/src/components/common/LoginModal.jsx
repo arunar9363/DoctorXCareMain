@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { loginUser, googleLogin } from "../../api/authApi";
-import useAuth from "../../hooks/useAuth";
+// Fixed: wrong path "../../api/authApi" → correct "../../api/auth.api.js"
+import { loginUser, googleLogin } from "../../api/auth.api.js";
+// Fixed: import path aligned with project structure
+import { useAuth } from "../../context/AuthContext.jsx";
 
 function LoginModal({ show, onClose, message, onShowToast, onLoginSuccess, redirectPath }) {
   const [email, setEmail] = useState("");
@@ -23,8 +25,10 @@ function LoginModal({ show, onClose, message, onShowToast, onLoginSuccess, redir
     setIsLoading(true);
 
     try {
-      const data = await loginUser(email, password);
-      login(data.user, data.token)
+      const res = await loginUser(email, password);
+      // loginUser is alias for loginAPI — returns axios response
+      const { token, user } = res.data;
+      login(token, user);
 
       setEmail("");
       setPassword("");
@@ -58,7 +62,6 @@ function LoginModal({ show, onClose, message, onShowToast, onLoginSuccess, redir
   const handleGoogleLogin = async () => {
     setIsLoading(true);
     try {
-      // Google OAuth token lena — Google Identity Services se
       if (!window.google) {
         throw new Error("Google SDK not loaded");
       }
@@ -67,8 +70,9 @@ function LoginModal({ show, onClose, message, onShowToast, onLoginSuccess, redir
         client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
         callback: async (response) => {
           try {
-            const data = await googleLogin(response.credential);
-            login(data.user, data.token);
+            const res = await googleLogin(response.credential);
+            const { token, user } = res.data;
+            login(token, user);
 
             if (onShowToast) {
               onShowToast("Welcome! Logged in with Google.", "success");
@@ -343,18 +347,20 @@ function LoginModal({ show, onClose, message, onShowToast, onLoginSuccess, redir
           >
             Create an account
           </Link>
+          {/* Fixed: broken string href → proper <Link> tag */}
           <p style={{ fontSize: '14px', color: '#6b7280', marginTop: '16px' }}>
+            <Link
+              to="/forgot-password"
+              style={{ color: '#0d9db8', textDecoration: 'none', fontWeight: '600' }}
+              onClick={onClose}
+            >
+              Forgot your password?
+            </Link>
+          </p>
+        </div>
 
-            href="/forgot-password"
-            style={{ color: '#0d9db8', textDecoration: 'none', fontWeight: '600' }}
-            {">"}
-            Forgot your password?
-          
-        </p>
       </div>
-
     </div>
-    </div >
   );
 }
 
