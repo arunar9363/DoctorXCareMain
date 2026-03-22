@@ -1,5 +1,5 @@
 import { createContext, useState, useEffect, useCallback } from 'react'
-import { getMe } from '../api/authApi'
+import { getMeAPI } from '../api/auth.api.js'
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const AuthContext = createContext(null)
@@ -15,7 +15,7 @@ export const AuthProvider = ({ children }) => {
       const savedToken = localStorage.getItem('token')
       if (savedToken) {
         try {
-          const data = await getMe()
+          const data = await getMeAPI()
           setUser(data.user)
           setToken(savedToken)
         // eslint-disable-next-line no-unused-vars

@@ -16,8 +16,8 @@ import {
   ChevronLeft,
   ChevronRight
 } from 'lucide-react';
-import { useWHONews, useWHOOutbreaks } from '../../hooks/useWHOApi';
-import { getAllDiseasesAPI, searchDiseasesAPI } from '../../api/disease.api.js';
+import { whoApiService } from "../../hooks/useWHOApi.js";
+import { getAllDiseases as getAllDiseasesAPI, searchDiseases as searchDiseasesAPI } from "../../api/diseaseApi.js";
 
 // Helper hook for responsive design using media queries in JS
 const useMediaQuery = (query) => {
@@ -56,6 +56,13 @@ const DiseaseSearchPage = () => {
   const [scrollContainerRef, setScrollContainerRef] = useState(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
+
+  // WHO Updates State — replaces useWHONews and useWHOOutbreaks hooks
+  const [whoUpdates, setWhoUpdates] = useState([]);
+  const [whoLoading, setWhoLoading] = useState(false);
+  const [whoError, setWhoError] = useState(null);
+  const [newOutbreaks, setNewOutbreaks] = useState([]);
+  const [hasNewOutbreaks, setHasNewOutbreaks] = useState(false);
 
   // Page loader timer
   useEffect(() => {
@@ -97,9 +104,61 @@ const DiseaseSearchPage = () => {
     setInteractionStates(prev => ({ ...prev, [key]: { ...prev[key], [type]: value } }));
   };
 
-  // WHO API Hooks
-  const { updates: whoUpdates = [], loading: whoLoading, error: whoError, refresh: refreshWHOUpdates } = useWHONews({ limit: 8, autoRefresh: true, refreshInterval: 300000, includeOutbreaks: true, includeEmergencies: true }) || {};
-  const { newOutbreaks = [], hasNewOutbreaks, clearNewOutbreaks } = useWHOOutbreaks({ limit: 5, enableMonitoring: true, monitoringInterval: 600000 }) || {};
+  // WHO News fetch — replaces useWHONews hook
+  const fetchWHONews = useCallback(async () => {
+    setWhoLoading(true);
+    setWhoError(null);
+    try {
+      const updates = await whoApiService.fetchNews({
+        limit: 8,
+        feedTypes: ['news', 'diseaseOutbreaks']
+      });
+      setWhoUpdates(updates || []);
+    } catch (err) {
+      setWhoError('Failed to load WHO updates');
+      console.error('WHO news fetch error:', err);
+    } finally {
+      setWhoLoading(false);
+    }
+  }, []);
+
+  // WHO Outbreaks fetch — replaces useWHOOutbreaks hook
+  const fetchWHOOutbreaks = useCallback(async () => {
+    try {
+      const outbreaks = await whoApiService.getDiseaseOutbreaks(5);
+      if (outbreaks && outbreaks.length > 0) {
+        setNewOutbreaks(outbreaks);
+        setHasNewOutbreaks(true);
+      }
+    } catch (err) {
+      console.error('WHO outbreaks fetch error:', err);
+    }
+  }, []);
+
+  // Clear new outbreaks alert — replaces clearNewOutbreaks from hook
+  const clearNewOutbreaks = useCallback(() => {
+    setHasNewOutbreaks(false);
+    setNewOutbreaks([]);
+  }, []);
+
+  // Refresh WHO updates — replaces refresh from hook
+  const refreshWHOUpdates = useCallback(() => {
+    fetchWHONews();
+  }, [fetchWHONews]);
+
+  // Load WHO data on mount and auto-refresh every 5 minutes
+  useEffect(() => {
+    fetchWHONews();
+    fetchWHOOutbreaks();
+
+    const newsInterval = setInterval(fetchWHONews, 300000);   // 5 minutes
+    const outbreakInterval = setInterval(fetchWHOOutbreaks, 600000); // 10 minutes
+
+    return () => {
+      clearInterval(newsInterval);
+      clearInterval(outbreakInterval);
+    };
+  }, [fetchWHONews, fetchWHOOutbreaks]);
 
   const createSlug = useCallback((name) => {
     return name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '');
@@ -115,7 +174,7 @@ const DiseaseSearchPage = () => {
         try {
           // Replaced: fetch('/data/diseases.json') → MongoDB backend API
           const res = await getAllDiseasesAPI();
-          diseasesData = res.data || [];
+          diseasesData = res.data || res || [];
           // eslint-disable-next-line no-unused-vars
         } catch (fetchError) {
           diseasesData = [];
@@ -183,7 +242,7 @@ const DiseaseSearchPage = () => {
       if (searchQuery.trim()) {
         try {
           const res = await searchDiseasesAPI(searchQuery.trim());
-          const backendResults = res.data || [];
+          const backendResults = res.data || res || [];
           if (backendResults.length > 0) {
             // Merge: backend results first, then local-only results not already in backend response
             const backendIds = new Set(backendResults.map(d => d._id || d.id));
@@ -1160,7 +1219,7 @@ const DiseaseSearchPage = () => {
                 >
                   {filteredDiseases.map((disease, index) => (
                     <div
-                      key={disease.id}
+                      key={disease._id || disease.id || index}
                       style={styles.diseaseCard(getInteractionStyles(`card${index}`).isHovered, index)}
                       {...interactiveProps(`card${index}`)}
                     >
@@ -1251,7 +1310,7 @@ const DiseaseSearchPage = () => {
                 <div style={styles.updatesList}>
                   {whoUpdates.map((update, index) => (
                     <article
-                      key={update.id}
+                      key={update.id || index}
                       style={styles.updateItem(getInteractionStyles(`update${index}`).isHovered, index)}
                       onClick={() => handleUpdateClick(update)}
                       {...interactiveProps(`update${index}`)}

@@ -1,4 +1,4 @@
-import axiosInstance from './axiosInstance'
+import axiosInstance from './axios'
 
 // Get symptoms (search or all)
 export const getSymptoms = async (query = '', age = 25) => {

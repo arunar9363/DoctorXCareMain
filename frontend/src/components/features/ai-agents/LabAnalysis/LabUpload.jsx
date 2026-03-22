@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Upload, Activity, FileText, AlertCircle } from 'lucide-react';
 import LabResult from './LabResult';
-import { analyzeLabImageAPI, saveLabReportAPI } from '../../api/lab.api.js';
+import { analyzeLabImage as analyzeLabImageAPI } from "../../../../api/aiAgentsApi.js";
+import { saveLabReport as saveLabReportAPI } from "../../../../api/labReportApi.js";
 
 const LabUpload = () => {
   const [file, setFile] = useState(null);

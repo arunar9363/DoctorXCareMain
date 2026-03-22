@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { sendChatMessageAPI } from "../api/chat.api.js";
-import { useAuth } from "../context/AuthContext.jsx";
+import useAuth from "../hooks/useAuth.js";
 import API from "../api/axios.js";
 
 export default function DoctorXAIPage() {

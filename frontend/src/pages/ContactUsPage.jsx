@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { Star, Send, CheckCircle, ChevronLeft, ChevronRight } from 'lucide-react';
-import { getFeedbacksAPI, submitFeedbackAPI } from '../api/feedback.api.js';
+import { getFeedbacks as getFeedbacksAPI, submitFeedback as submitFeedbackAPI } from "../api/feedbackApi.js";
+
 
 import contactImage from '/assets/c1.svg';
 import doctorXLogo from '/assets/MAINLOGO2.png';

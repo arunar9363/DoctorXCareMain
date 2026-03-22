@@ -1,4 +1,4 @@
-import axiosInstance from './axiosInstance'
+import axiosInstance from './axios'
 
 // Get all saved diseases
 export const getSavedDiseases = async () => {

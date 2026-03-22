@@ -2,9 +2,6 @@
 import API from './axios.js'
 
 // POST /api/chat — Send message with full conversation history
-// payload: { message, systemPrompt, history: [], sessionId }
-export const sendChatMessageAPI = (payload) =>
-  API.post('/api/chat', payload)
 
 // POST /api/chat/save — Save turn to MongoDB
 export const saveChatTurnAPI = (sessionId, userMessage, botResponse) =>

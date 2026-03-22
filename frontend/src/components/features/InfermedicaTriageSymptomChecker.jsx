@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { saveAssessmentAPI } from '../../api/assessment.api.js';
-import { useAuth } from '../../context/AuthContext.jsx';
+import { createAssessmentAPI as saveAssessmentAPI } from '../../api/assessment.api.js';
+import useAuth from '../../context/AuthContext.jsx';
 
 const styles = {
   root: {

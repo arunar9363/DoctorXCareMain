@@ -1,4 +1,4 @@
-import axiosInstance from './axiosInstance'
+import axiosInstance from './axios'
 
 // Get all conditions
 export const getAllTracking = async () => {

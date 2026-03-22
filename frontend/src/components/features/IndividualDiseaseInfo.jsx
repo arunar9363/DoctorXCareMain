@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getDiseaseBySlugAPI, getAllDiseasesAPI } from '../../api/disease.api.js';
-import { saveDiseaseAPI, checkDiseaseIsSavedAPI, removeSavedDiseaseAPI } from '../../api/disease.api.js';
+import { checkIfSaved as checkDiseaseIsSavedAPI, saveDisease as saveDiseaseAPI, removeSavedDisease as removeSavedDiseaseAPI } from '../../api/savedDiseaseApi.js';
+import { getDiseaseBySlug as getDiseaseBySlugAPI, getAllDiseases as getAllDiseasesAPI } from '../../api/diseaseApi.js';
+
 import {
   ArrowLeft,
   AlertCircle,
@@ -84,7 +85,7 @@ const IndividualDiseasesInfo = () => {
         if (diseaseId) {
           try {
             const res = await getDiseaseBySlugAPI(diseaseId);
-            foundDisease = res.data;
+            foundDisease = res.data || res;
           } catch {
             // Slug not found — fallback to searching all diseases below
           }
@@ -93,7 +94,7 @@ const IndividualDiseasesInfo = () => {
         // If slug lookup failed, load all diseases and find by id or slug locally
         if (!foundDisease) {
           const allRes = await getAllDiseasesAPI();
-          const diseasesData = allRes.data || [];
+          const diseasesData = allRes.data || allRes || [];
 
           // Find by id
           foundDisease = diseasesData.find(d => d.id === diseaseId || d._id === diseaseId);
@@ -125,7 +126,7 @@ const IndividualDiseasesInfo = () => {
         if (diseaseId) {
           try {
             const savedRes = await checkDiseaseIsSavedAPI(diseaseId);
-            setIsSaved(savedRes.data.isSaved || false);
+            setIsSaved(savedRes.isSaved || savedRes.data?.isSaved || false);
           } catch {
             // Not saved or check failed — default false is fine
           }
@@ -202,7 +203,7 @@ const IndividualDiseasesInfo = () => {
         // Save to MongoDB saved diseases
         await saveDiseaseAPI({
           diseaseSlug: slug,
-          name: disease.name,
+          diseaseName: disease.name,
           category: disease.category || '',
           description: disease.description || '',
           severity: disease.severity || '',
@@ -457,12 +458,12 @@ const IndividualDiseasesInfo = () => {
         return (
           <div>
             <h3 style={s.heading}><Pill size={18} /> Treatment</h3>
-            {disease.treatment?.length > 0 ? disease.treatment.map((t, i) => (
+            {disease.treatment?.length > 0 ? disease.treatment.map((treat, i) => (
               <div key={i} style={s.item(hoverStates[`t${i}`])}
                 onMouseEnter={() => handleHover(`t${i}`, true)}
                 onMouseLeave={() => handleHover(`t${i}`, false)}>
                 <Pill size={14} style={s.icon} />
-                <span>{t}</span>
+                <span>{treat}</span>
               </div>
             )) : <p style={s.cardText}>No treatment information available.</p>}
           </div>
@@ -472,12 +473,12 @@ const IndividualDiseasesInfo = () => {
         return (
           <div>
             <h3 style={s.heading}><Shield size={18} /> Prevention</h3>
-            {disease.prevention?.length > 0 ? disease.prevention.map((p, i) => (
+            {disease.prevention?.length > 0 ? disease.prevention.map((prev, i) => (
               <div key={i} style={s.item(hoverStates[`p${i}`])}
                 onMouseEnter={() => handleHover(`p${i}`, true)}
                 onMouseLeave={() => handleHover(`p${i}`, false)}>
                 <Shield size={14} style={s.icon} />
-                <span>{p}</span>
+                <span>{prev}</span>
               </div>
             )) : <p style={s.cardText}>No prevention information available.</p>}
           </div>

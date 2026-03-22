@@ -12,8 +12,8 @@ import {
   ChevronRight
 } from 'lucide-react';
 import { getAssessmentsAPI, deleteAssessmentAPI, getAssessmentStatsAPI } from '../api/assessment.api.js';
-import { getSavedDiseasesAPI, removeSavedDiseaseAPI } from '../api/disease.api.js';
-import { useAuth } from '../context/AuthContext.jsx';
+import { getSavedDiseases as getSavedDiseasesAPI, removeSavedDisease as removeSavedDiseaseAPI } from '../api/savedDiseaseApi.js'
+import useAuth from "../hooks/useAuth.js";
 
 const HistoryPage = () => {
   const navigate = useNavigate();

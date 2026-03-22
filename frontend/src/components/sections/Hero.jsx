@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import LoginModal from "../common/LoginModal";
 import { ArrowRight, Check, Sparkles } from 'lucide-react';
-import { useAuth } from "../../context/AuthContext.jsx";
+import useAuth from "../../context/AuthContext.jsx";
 
 function Hero() {
   const [showLogin, setShowLogin] = useState(false);

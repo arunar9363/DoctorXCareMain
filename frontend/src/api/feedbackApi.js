@@ -1,4 +1,4 @@
-import axiosInstance from './axiosInstance'
+import axiosInstance from './axios'
 
 // Get all feedbacks
 export const getFeedbacks = async () => {

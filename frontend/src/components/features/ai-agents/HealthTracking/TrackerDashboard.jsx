@@ -5,8 +5,8 @@ import {
   AlertTriangle, AlertCircle, Edit2, Save, X, Trash2
 } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
-import { analyzeHealthDataAPI, extractReportDataAPI } from '../../api/tracking.api.js';
-import { saveHealthMetricAPI, getConditionDataAPI } from '../../api/tracking.api.js';
+import { analyzeHealthTracking as analyzeHealthDataAPI, extractReportData as extractReportDataAPI } from "../../../../api/aiAgentsApi.js";
+import { addMetric as saveHealthMetricAPI, getTrackingByCondition as getConditionDataAPI } from "../../../../api/healthTrackingApi.js"; 
 
 const TrackerDashboard = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);

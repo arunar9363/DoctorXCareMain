@@ -1,10 +1,10 @@
 // src/pages/Dashboard.jsx
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext.jsx";
+import useAuth from "../hooks/useAuth.js";
 import { getMeAPI } from "../api/auth.api.js";
 import { getAssessmentsAPI } from "../api/assessment.api.js";
-import { getSavedDiseasesAPI } from "../api/disease.api.js";
+import { getSavedDiseases as getSavedDiseasesAPI } from '../api/savedDiseaseApi.js'
 import profileImage from "/assets/profile.jpg";
 
 // Helper function to format date

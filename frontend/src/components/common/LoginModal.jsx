@@ -3,7 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 // Fixed: wrong path "../../api/authApi" → correct "../../api/auth.api.js"
 import { loginUser, googleLogin } from "../../api/auth.api.js";
 // Fixed: import path aligned with project structure
-import { useAuth } from "../../context/AuthContext.jsx";
+import useAuth from "../../hooks/useAuth.js";
 
 function LoginModal({ show, onClose, message, onShowToast, onLoginSuccess, redirectPath }) {
   const [email, setEmail] = useState("");
@@ -28,7 +28,7 @@ function LoginModal({ show, onClose, message, onShowToast, onLoginSuccess, redir
       const res = await loginUser(email, password);
       // loginUser is alias for loginAPI — returns axios response
       const { token, user } = res.data;
-      login(token, user);
+      login(user, token)
 
       setEmail("");
       setPassword("");

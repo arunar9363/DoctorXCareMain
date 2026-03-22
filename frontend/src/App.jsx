@@ -2,7 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Outlet, Navigate } from "react-
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./App.css";
 
-import { useAuth } from "./context/AuthContext.jsx";
+import useAuth from "./hooks/useAuth.js";
 
 // Components
 import Navbar from "./components/common/Navbar";

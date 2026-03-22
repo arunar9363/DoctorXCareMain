@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext.jsx';
+import useAuth from "../hooks/useAuth.js";
 import { getMeAPI, updateProfileAPI } from '../api/auth.api.js';
 import { User, Mail, Calendar, MapPin, Droplet, Users, FileText, X, Edit2, Save, XCircle, Clock, AlertCircle } from 'lucide-react';
 import profileImage from '/assets/profile.jpg';

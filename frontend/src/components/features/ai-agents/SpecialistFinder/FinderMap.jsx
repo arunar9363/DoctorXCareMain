@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { GoogleMap, useJsApiLoader, Marker, InfoWindow } from "@react-google-maps/api";
-import { getNearbyFacilitiesAPI } from '../../api/doctor.api.js';
+import { findNearbyDoctors as getNearbyFacilitiesAPI } from "../../../../api/aiAgentsApi.js";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_Maps_API_KEY || "";

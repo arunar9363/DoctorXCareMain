@@ -277,3 +277,11 @@ export const whoApiService = new WHOApiService();
 
 // Export default class for custom instantiation
 export default WHOApiService;
+
+export const useWHONews = (limit = 10) => {
+  return whoApiService.fetchNews({ limit });
+};
+
+export const useWHOOutbreaks = (limit = 10) => {
+  return whoApiService.getDiseaseOutbreaks(limit);
+};

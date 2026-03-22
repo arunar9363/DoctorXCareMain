@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 //           import { createUserWithEmailAndPassword } from "firebase/auth"
 //           import { doc, setDoc } from "firebase/firestore"
 import { registerAPI } from "../api/auth.api.js";
-import { useAuth } from "../context/AuthContext.jsx";
+import useAuth from "../hooks/useAuth.js";
 
 import loginImage from "/assets/ragisterpage.svg";
 import LoginModal from "../components/common/LoginModal";
