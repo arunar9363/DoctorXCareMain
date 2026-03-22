@@ -16,7 +16,7 @@ export const AuthProvider = ({ children }) => {
       if (savedToken) {
         try {
           const data = await getMeAPI()
-          setUser(data.user)
+          setUser(data.data?.user || data.user || data)
           setToken(savedToken)
         // eslint-disable-next-line no-unused-vars
         } catch (err) {
