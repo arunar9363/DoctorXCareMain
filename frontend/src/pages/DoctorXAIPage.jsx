@@ -9,54 +9,59 @@ export default function DoctorXAIPage() {
   const [messages, setMessages] = useState([
     {
       type: "bot",
-      text: "Hello! I'm DoctorXCare, your AI medical assistant. How can I help you today? Please feel free to ask any health-related questions you might have."
+      text: "Hello! I'm DoctorXCare, your AI medical assistant powered by Groq. How can I help you today?"
     }
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [theme, setTheme] = useState("light");
-  const [sessionId] = useState(() => `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`);
+  const [sessionId] = useState(
+    () => `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+  );
   const [conversationLoaded, setConversationLoaded] = useState(false);
   const chatBoxRef = useRef(null);
 
-  // ── Conversation history for AI context (keeps full chat for Gemini) ────────
-  // Each entry: { role: "user" | "model", parts: [{ text: "..." }] }
+  // Groq uses role: 'user' | 'assistant' (NOT 'model' like Gemini)
+  // Each entry: { role: 'user' | 'assistant', content: '...' }
   const conversationHistoryRef = useRef([]);
 
   // Simple markdown to HTML converter
   const parseMarkdown = (text) => {
     if (!text) return "";
-    text = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-    text = text.replace(/\*([^*]+?)\*/g, '<em>$1</em>');
-    text = text.replace(/^### (.+)$/gm, '<h3>$1</h3>');
-    text = text.replace(/^## (.+)$/gm, '<h2>$1</h2>');
-    text = text.replace(/^# (.+)$/gm, '<h1>$1</h1>');
-    text = text.replace(/^\* (.+)$/gm, '<li>$1</li>');
-    text = text.replace(/^- (.+)$/gm, '<li>$1</li>');
+    text = text.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+    text = text.replace(/\*([^*]+?)\*/g, "<em>$1</em>");
+    text = text.replace(/^### (.+)$/gm, "<h3>$1</h3>");
+    text = text.replace(/^## (.+)$/gm, "<h2>$1</h2>");
+    text = text.replace(/^# (.+)$/gm, "<h1>$1</h1>");
+    text = text.replace(/^\* (.+)$/gm, "<li>$1</li>");
+    text = text.replace(/^- (.+)$/gm, "<li>$1</li>");
     text = text.replace(/(<li>.*<\/li>\n?)+/g, (match) => `<ul>${match}</ul>`);
-    text = text.replace(/\n/g, '<br/>');
+    text = text.replace(/\n/g, "<br/>");
     return text;
   };
 
-  // ── Theme detection ─────────────────────────────────────────────────────────
+  // Theme detection
   useEffect(() => {
     const htmlElement = document.documentElement;
     const currentTheme = localStorage.getItem("theme") || "light";
     setTheme(currentTheme);
 
     const handleStorageChange = () => {
-      const newTheme = localStorage.getItem("theme") || "light";
-      setTheme(newTheme);
+      setTheme(localStorage.getItem("theme") || "light");
     };
-
     window.addEventListener("storage", handleStorageChange);
 
     const observer = new MutationObserver(() => {
-      const newTheme = htmlElement.getAttribute("data-theme") || localStorage.getItem("theme") || "light";
-      setTheme(newTheme);
+      setTheme(
+        htmlElement.getAttribute("data-theme") ||
+          localStorage.getItem("theme") ||
+          "light"
+      );
     });
-
-    observer.observe(htmlElement, { attributes: true, attributeFilter: ["data-theme"] });
+    observer.observe(htmlElement, {
+      attributes: true,
+      attributeFilter: ["data-theme"]
+    });
 
     return () => {
       window.removeEventListener("storage", handleStorageChange);
@@ -64,50 +69,45 @@ export default function DoctorXAIPage() {
     };
   }, []);
 
-  // ── Auto-scroll ─────────────────────────────────────────────────────────────
+  // Auto-scroll on new messages
   useEffect(() => {
     if (chatBoxRef.current) {
       chatBoxRef.current.scrollTop = chatBoxRef.current.scrollHeight;
     }
   }, [messages]);
 
-  // ── Load previous conversation from MongoDB when user logs in ───────────────
+  // Load previous conversation from MongoDB when user logs in
   useEffect(() => {
     if (!user || conversationLoaded) return;
 
     const loadPreviousChat = async () => {
       try {
-        const res = await API.get('/api/chat/history');
+        const res = await API.get("/api/chat/history");
         const history = res.data?.history || [];
 
         if (history.length > 0) {
-          // Restore messages for UI display
           const restoredMessages = [
             {
               type: "bot",
-              text: "Hello! I'm DoctorXCare, your AI medical assistant. How can I help you today? Please feel free to ask any health-related questions you might have."
+              text: "Hello! I'm DoctorXCare, your AI medical assistant powered by Groq. How can I help you today?"
             }
           ];
-
-          // Restore conversation history for AI context
           const restoredHistory = [];
 
-          history.forEach(entry => {
+          history.forEach((entry) => {
             restoredMessages.push({ type: "user", text: entry.userMessage });
-            restoredMessages.push({ type: "bot", text: entry.botResponse });
+            restoredMessages.push({ type: "bot",  text: entry.botResponse });
 
-            // Rebuild Gemini conversation history
-            restoredHistory.push({ role: "user", parts: [{ text: entry.userMessage }] });
-            restoredHistory.push({ role: "model", parts: [{ text: entry.botResponse }] });
+            // Groq format: role is 'user' | 'assistant'
+            restoredHistory.push({ role: "user",      content: entry.userMessage });
+            restoredHistory.push({ role: "assistant", content: entry.botResponse });
           });
 
           setMessages(restoredMessages);
           conversationHistoryRef.current = restoredHistory;
         }
-      // eslint-disable-next-line no-unused-vars
       } catch (err) {
-        // No history or not logged in — fresh start is fine
-        console.log('No previous chat history found');
+        console.log("No previous chat history found");
       } finally {
         setConversationLoaded(true);
       }
@@ -116,63 +116,52 @@ export default function DoctorXAIPage() {
     loadPreviousChat();
   }, [user, conversationLoaded]);
 
-  // ── Send message ────────────────────────────────────────────────────────────
+  // Send message
   const sendMessage = async () => {
     if (!input.trim()) return;
 
     const userMessage = input.trim();
-
-    // Add user message to UI
-    setMessages(prev => [...prev, { type: "user", text: userMessage }]);
+    setMessages((prev) => [...prev, { type: "user", text: userMessage }]);
     setInput("");
     setLoading(true);
 
-    const systemPrompt = `You are DoctorXCare, a professional AI medical assistant and doctor. Be helpful, informative, polite, and provide accurate health information. Always give medical help as a doctor would, including suggesting appropriate medicines, treatments, and remedies when relevant. Provide SHORT and BEST solutions to medical problems - be concise, direct, and focus on the most effective treatments. Keep responses point. Provide professional medical advice, medication suggestions, and treatment options in a clear, easy-to-understand format. and always prioritize user safety and well-being. provide disclaimers when necessary. provide medical information based on established medical guidelines and practices. Never provide harmful or dangerous advice.
-    do not answer questions outside the medical domain. do not mention disclaimer unless asked.`;
-
     try {
-      // Send to backend with full conversation history for context
+      // Send to backend with full Groq-format history
+      // Backend chat.routes.js now uses role: 'user'|'assistant' for Groq
       const res = await sendChatMessageAPI({
         message: userMessage,
-        systemPrompt: systemPrompt,
-        // Full history so Gemini remembers previous messages
         history: conversationHistoryRef.current,
         sessionId: sessionId
       });
 
-      const data = res.data;
+      const botReply = res.data?.response || "";
 
-      if (data.response) {
-        const botReply = data.response;
+      setMessages((prev) => [...prev, { type: "bot", text: botReply }]);
 
-        // Add bot reply to UI
-        setMessages(prev => [...prev, { type: "bot", text: botReply }]);
+      // Update Groq-format conversation history
+      conversationHistoryRef.current = [
+        ...conversationHistoryRef.current,
+        { role: "user",      content: userMessage },
+        { role: "assistant", content: botReply }
+      ];
 
-        // Update conversation history for AI context (both user + bot)
-        conversationHistoryRef.current = [
-          ...conversationHistoryRef.current,
-          { role: "user", parts: [{ text: userMessage }] },
-          { role: "model", parts: [{ text: botReply }] }
-        ];
-
-        // Save conversation turn to MongoDB if user is logged in
-        if (user) {
-          try {
-            await API.post('/api/chat/save', {
-              sessionId: sessionId,
-              userMessage: userMessage,
-              botResponse: botReply
-            });
-          } catch (saveErr) {
-            // Save failed silently — chat still works
-            console.error('Failed to save chat to MongoDB:', saveErr);
-          }
+      // Save turn to MongoDB if logged in
+      if (user) {
+        try {
+          await API.post("/api/chat/save", {
+            sessionId,
+            userMessage,
+            botResponse: botReply
+          });
+        } catch (saveErr) {
+          console.error("Failed to save chat to MongoDB:", saveErr);
         }
-      } else {
-        setMessages(prev => [...prev, { type: "error", text: "Error: " + data.error }]);
       }
     } catch (error) {
-      setMessages(prev => [...prev, { type: "error", text: "Error: " + error.message }]);
+      setMessages((prev) => [
+        ...prev,
+        { type: "error", text: "Error: " + error.message }
+      ]);
     } finally {
       setLoading(false);
     }
@@ -182,94 +171,91 @@ export default function DoctorXAIPage() {
     if (e.key === "Enter" && !loading) sendMessage();
   };
 
-  // ── Clear conversation ──────────────────────────────────────────────────────
   const clearConversation = async () => {
     conversationHistoryRef.current = [];
-    setMessages([{
-      type: "bot",
-      text: "Hello! I'm DoctorXCare, your AI medical assistant. How can I help you today? Please feel free to ask any health-related questions you might have."
-    }]);
+    setMessages([
+      {
+        type: "bot",
+        text: "Hello! I'm DoctorXCare, your AI medical assistant powered by Groq. How can I help you today?"
+      }
+    ]);
 
     if (user) {
       try {
         await API.delete(`/api/chat/history/${sessionId}`);
       } catch (err) {
-        console.error('Failed to clear chat history:', err);
+        console.error("Failed to clear chat history:", err);
       }
     }
   };
 
   const colors = {
     light: {
-      primary: "#ffffff",
+      primary:   "#ffffff",
       secondary: "#0d9db8",
-      third: "#3b82f6",
-      fourth: "#f0f9fb",
-      dark: "#1a1a1a",
-      border: "#e0e7ff",
-      bg: "#f0f9fb",
-      shadow: "0 4px 20px rgba(13, 157, 184, 0.1)",
-      headerBg: "linear-gradient(135deg, #e0f2fe 0%, #f0f9fb 100%)",
+      third:     "#3b82f6",
+      fourth:    "#f0f9fb",
+      dark:      "#1a1a1a",
+      border:    "#e0e7ff",
+      bg:        "#f0f9fb",
+      shadow:    "0 4px 20px rgba(13, 157, 184, 0.1)",
+      headerBg:  "linear-gradient(135deg, #e0f2fe 0%, #f0f9fb 100%)"
     },
     dark: {
-      primary: "#0f172a",
+      primary:   "#0f172a",
       secondary: "#0d9db8",
-      third: "#60a5fa",
-      fourth: "#1e293b",
-      dark: "#e2e8f0",
-      border: "#334155",
-      bg: "#0f172a",
-      shadow: "0 4px 20px rgba(0, 0, 0, 0.3)",
-      headerBg: "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)",
-    },
+      third:     "#60a5fa",
+      fourth:    "#1e293b",
+      dark:      "#e2e8f0",
+      border:    "#334155",
+      bg:        "#0f172a",
+      shadow:    "0 4px 20px rgba(0, 0, 0, 0.3)",
+      headerBg:  "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)"
+    }
   };
 
-  const c = colors[theme];
+  const c = colors[theme] || colors.light;
 
   return (
-    <div style={styles.pageWrapper(c, theme)}>
-      {/* Chat Container */}
+    <div style={styles.pageWrapper(c)}>
       <div style={styles.chatWrapper(c)}>
         <div style={styles.container(c)}>
 
-          {/* Header — show when chat has started */}
+          {/* Header */}
           {messages.length > 1 && (
             <div style={styles.header(c)}>
               <img src="/assets/MAINLOGO2.png" alt="DoctorX" style={styles.headerLogo} />
-              <h2 style={styles.headerTitle(c)}>DoctorXCare AI Assistance</h2>
-              <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                {/* Context indicator — shows AI remembers previous messages */}
+              <h2 style={styles.headerTitle(c)}>DoctorXCare AI Assistant</h2>
+              <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: "8px" }}>
                 {conversationHistoryRef.current.length > 0 && (
                   <span style={{
-                    fontSize: '11px',
+                    fontSize: "11px",
                     color: c.secondary,
                     background: `${c.secondary}15`,
                     border: `1px solid ${c.secondary}30`,
-                    padding: '3px 8px',
-                    borderRadius: '20px',
+                    padding: "3px 8px",
+                    borderRadius: "20px",
                     fontWeight: 600
                   }}>
                     🧠 {Math.floor(conversationHistoryRef.current.length / 2)} messages remembered
                   </span>
                 )}
-                {/* Clear chat button */}
                 <button
                   onClick={clearConversation}
-                  title="Clear conversation"
                   style={{
-                    background: 'none',
+                    background: "none",
                     border: `1px solid ${c.border}`,
-                    borderRadius: '8px',
-                    padding: '4px 10px',
-                    cursor: 'pointer',
+                    borderRadius: "8px",
+                    padding: "4px 10px",
+                    cursor: "pointer",
                     color: c.dark,
-                    fontSize: '12px',
+                    fontSize: "12px",
                     fontWeight: 600,
                     opacity: 0.7,
-                    transition: 'all 0.2s'
+                    transition: "all 0.2s"
                   }}
-                  onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
-                  onMouseLeave={(e) => e.currentTarget.style.opacity = '0.7'}
+                  onMouseEnter={(e) => (e.currentTarget.style.opacity = "1")}
+                  onMouseLeave={(e) => (e.currentTarget.style.opacity = "0.7")}
                 >
                   Clear
                 </button>
@@ -283,10 +269,11 @@ export default function DoctorXAIPage() {
               <div style={styles.welcome}>
                 <img src="/assets/MAINLOGO2.png" alt="DoctorX" style={styles.welcomeLogo} />
                 <h2 style={{ color: c.dark, marginTop: "24px", fontSize: "28px", fontWeight: "700" }}>
-                  Welcome to DoctorXCare AI Assistance
+                  Welcome to DoctorXCare AI
                 </h2>
                 <p style={{ color: c.dark, opacity: 0.7, fontSize: "14px", maxWidth: "400px", margin: "12px auto 0" }}>
-                  Ask me health-related questions about symptoms, diseases, treatments, and general wellness advice <br />Powered by Gemini-pro.
+                  Ask me health-related questions about symptoms, diseases, treatments, and general wellness.
+                  <br />Powered by Groq (llama-3.3-70b).
                 </p>
                 {user && (
                   <p style={{ color: c.secondary, fontSize: "12px", marginTop: "8px", fontWeight: 600 }}>
@@ -298,7 +285,11 @@ export default function DoctorXAIPage() {
                     Try asking:
                   </p>
                   <div style={styles.suggestions}>
-                    {["What to do for a headache?", "How to improve immunity naturally?", "How to reduce stress and anxiety?"].map((q, i) => (
+                    {[
+                      "What to do for a headache?",
+                      "How to improve immunity naturally?",
+                      "How to reduce stress and anxiety?"
+                    ].map((q, i) => (
                       <button
                         key={i}
                         onClick={() => setInput(q)}
@@ -323,7 +314,10 @@ export default function DoctorXAIPage() {
             )}
 
             {messages.map((msg, idx) => (
-              <div key={idx} style={msg.type === "user" ? styles.userMessageBox : styles.botMessageBox}>
+              <div
+                key={idx}
+                style={msg.type === "user" ? styles.userMessageBox : styles.botMessageBox}
+              >
                 <div style={styles.messageRow(msg.type)}>
                   {msg.type !== "user" && (
                     <img src="/assets/MAINLOGO2.png" alt="Bot" style={styles.avatar} />
@@ -333,8 +327,8 @@ export default function DoctorXAIPage() {
                       msg.type === "user"
                         ? styles.userContent(c)
                         : msg.type === "error"
-                          ? styles.errorContent
-                          : styles.botContent(c)
+                        ? styles.errorContent
+                        : styles.botContent(c)
                     }
                   >
                     {msg.type === "bot" ? (
@@ -369,7 +363,7 @@ export default function DoctorXAIPage() {
             )}
           </div>
 
-          {/* Input Container */}
+          {/* Input */}
           <div style={styles.inputContainer(c)}>
             <div style={styles.inputWrapper}>
               <input
@@ -386,7 +380,6 @@ export default function DoctorXAIPage() {
               onClick={sendMessage}
               disabled={loading}
               style={styles.sendButton(c, loading)}
-              title={loading ? "Waiting for response..." : "Send message"}
             >
               {loading ? "..." : "Send"}
             </button>
@@ -396,45 +389,21 @@ export default function DoctorXAIPage() {
 
       <style>{`
         @keyframes typing {
-          0%, 60%, 100% {
-            transform: translateY(0);
-            opacity: 0.5;
-          }
-          30% {
-            transform: translateY(-10px);
-            opacity: 1;
-          }
+          0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
+          30% { transform: translateY(-10px); opacity: 1; }
         }
         @keyframes slideIn {
-          from {
-            opacity: 0;
-            transform: translateY(10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        @keyframes pulse {
-          0%, 100% {
-            opacity: 1;
-          }
-          50% {
-            opacity: 0.5;
-          }
+          from { opacity: 0; transform: translateY(10px); }
+          to   { opacity: 1; transform: translateY(0); }
         }
         div::-webkit-scrollbar { width: 8px; }
         div::-webkit-scrollbar-track { background: transparent; }
         div::-webkit-scrollbar-thumb { background: #0d9db8; border-radius: 10px; }
-        div::-webkit-scrollbar-thumb:hover { background: #0a7a8f; }
         h1, h2, h3 { margin: 12px 0 8px 0; font-weight: 700; }
-        h1 { font-size: 20px; }
-        h2 { font-size: 18px; }
-        h3 { font-size: 16px; }
+        h1 { font-size: 20px; } h2 { font-size: 18px; } h3 { font-size: 16px; }
         ul { margin: 10px 0; padding-left: 20px; }
         li { margin-bottom: 5px; }
-        strong { font-weight: 700; }
-        em { font-style: italic; }
+        strong { font-weight: 700; } em { font-style: italic; }
       `}</style>
     </div>
   );
@@ -448,18 +417,16 @@ const styles = {
     background: c.bg,
     fontFamily: "'Inter', sans-serif",
     marginTop: "62px",
-    transition: "background 0.3s ease",
+    transition: "background 0.3s ease"
   }),
-
   chatWrapper: (c) => ({
     flex: 1,
     display: "flex",
     justifyContent: "center",
     padding: "10px",
     background: c.bg,
-    width: "100%",
+    width: "100%"
   }),
-
   container: (c) => ({
     width: "100%",
     maxWidth: "900px",
@@ -472,9 +439,8 @@ const styles = {
     maxHeight: "85vh",
     overflow: "hidden",
     transition: "all 0.3s ease",
-    border: `1px solid ${c.border}`,
+    border: `1px solid ${c.border}`
   }),
-
   header: (c) => ({
     padding: "16px 32px",
     background: c.primary,
@@ -482,60 +448,22 @@ const styles = {
     display: "flex",
     alignItems: "center",
     gap: "12px",
-    transition: "background 0.3s ease",
+    transition: "background 0.3s ease"
   }),
-
-  headerLogo: {
-    width: "40px",
-    height: "40px",
-    borderRadius: "8px",
-    objectFit: "cover",
-  },
-
-  headerTitle: (c) => ({
-    color: c.dark,
-    fontSize: "20px",
-    fontWeight: "600",
-    margin: 0,
-  }),
-
+  headerLogo: { width: "40px", height: "40px", borderRadius: "8px", objectFit: "cover" },
+  headerTitle: (c) => ({ color: c.dark, fontSize: "20px", fontWeight: "600", margin: 0 }),
   chatContainer: (c) => ({
     flex: 1,
     overflowY: "auto",
     padding: "32px",
     background: c.fourth,
     scrollBehavior: "smooth",
-    transition: "background 0.3s ease",
+    transition: "background 0.3s ease"
   }),
-
-  welcome: {
-    textAlign: "center",
-    padding: "40px 20px",
-    animation: "slideIn 0.5s ease-out",
-  },
-
-  welcomeLogo: {
-    width: "72px",
-    height: "72px",
-    borderRadius: "16px",
-    objectFit: "cover",
-    boxShadow: "0 8px 24px rgba(13, 157, 184, 0.2)",
-  },
-
-  suggestionBox: (c) => ({
-    marginTop: "24px",
-    padding: "20px",
-    background: c.primary,
-    borderRadius: "12px",
-    border: `1px solid ${c.border}`,
-  }),
-
-  suggestions: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "10px",
-  },
-
+  welcome: { textAlign: "center", padding: "40px 20px", animation: "slideIn 0.5s ease-out" },
+  welcomeLogo: { width: "72px", height: "72px", borderRadius: "16px", objectFit: "cover", boxShadow: "0 8px 24px rgba(13, 157, 184, 0.2)" },
+  suggestionBox: (c) => ({ marginTop: "24px", padding: "20px", background: c.primary, borderRadius: "12px", border: `1px solid ${c.border}` }),
+  suggestions: { display: "flex", flexDirection: "column", gap: "10px" },
   suggestionBtn: (c) => ({
     padding: "12px 16px",
     background: c.fourth,
@@ -546,66 +474,40 @@ const styles = {
     fontSize: "13px",
     transition: "all 0.3s ease",
     textAlign: "left",
-    fontWeight: "500",
+    fontWeight: "500"
   }),
-
-  userMessageBox: {
-    display: "flex",
-    justifyContent: "flex-end",
-    marginBottom: "20px",
-    animation: "slideIn 0.3s ease-out",
-  },
-
-  botMessageBox: {
-    display: "flex",
-    justifyContent: "flex-start",
-    marginBottom: "20px",
-    animation: "slideIn 0.3s ease-out",
-  },
-
+  userMessageBox: { display: "flex", justifyContent: "flex-end", marginBottom: "20px", animation: "slideIn 0.3s ease-out" },
+  botMessageBox:  { display: "flex", justifyContent: "flex-start", marginBottom: "20px", animation: "slideIn 0.3s ease-out" },
   messageRow: (type) => ({
     display: "flex",
     alignItems: "flex-start",
     gap: "12px",
     justifyContent: type === "user" ? "flex-end" : "flex-start",
     maxWidth: "85%",
-    flexDirection: "column",
+    flexDirection: "column"
   }),
-
-  avatar: {
-    width: "32px",
-    height: "32px",
-    borderRadius: "50%",
-    objectFit: "cover",
-    flexShrink: 0,
-    boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
-  },
-
+  avatar: { width: "32px", height: "32px", borderRadius: "50%", objectFit: "cover", flexShrink: 0, boxShadow: "0 2px 8px rgba(0,0,0,0.1)" },
   userContent: (c) => ({
     background: c.secondary,
     color: "white",
-    padding: "18px 18px",
+    padding: "18px",
     borderRadius: "16px",
-    borderBottomRight: "2px",
     wordWrap: "break-word",
     lineHeight: "1.6",
     fontSize: "14px",
-    boxShadow: "0 2px 8px rgba(13, 157, 184, 0.2)",
+    boxShadow: "0 2px 8px rgba(13, 157, 184, 0.2)"
   }),
-
   botContent: (c) => ({
     background: c.primary,
     color: c.dark,
-    padding: "18px 18px",
+    padding: "18px",
     borderRadius: "16px",
-    borderBottomLeft: "2px",
     wordWrap: "break-word",
     lineHeight: "1.6",
     fontSize: "14px",
-    boxShadow: `0 2px 8px ${c.shadow}`,
-    border: `1px solid ${c.border}`,
+    boxShadow: c.shadow,
+    border: `1px solid ${c.border}`
   }),
-
   errorContent: {
     background: "#fef2f2",
     color: "#991b1b",
@@ -614,24 +516,10 @@ const styles = {
     wordWrap: "break-word",
     lineHeight: "1.6",
     fontSize: "14px",
-    borderLeft: "4px solid #dc2626",
+    borderLeft: "4px solid #dc2626"
   },
-
-  typingIndicator: {
-    display: "flex",
-    gap: "6px",
-    alignItems: "center",
-    padding: "8px 0",
-  },
-
-  dot: {
-    width: "8px",
-    height: "8px",
-    borderRadius: "50%",
-    background: "#0d9db8",
-    animation: "typing 1.4s ease-in-out infinite",
-  },
-
+  typingIndicator: { display: "flex", gap: "6px", alignItems: "center", padding: "8px 0" },
+  dot: { width: "8px", height: "8px", borderRadius: "50%", background: "#0d9db8", animation: "typing 1.4s ease-in-out infinite" },
   inputContainer: (c) => ({
     padding: "15px 22px",
     background: c.primary,
@@ -639,14 +527,9 @@ const styles = {
     display: "flex",
     gap: "12px",
     alignItems: "center",
-    transition: "background 0.3s ease",
+    transition: "background 0.3s ease"
   }),
-
-  inputWrapper: {
-    flex: 1,
-    display: "flex",
-  },
-
+  inputWrapper: { flex: 1, display: "flex" },
   input: (c) => ({
     flex: 1,
     padding: "10px 18px",
@@ -657,9 +540,8 @@ const styles = {
     background: c.fourth,
     color: c.dark,
     transition: "all 0.3s ease",
-    fontFamily: "'Inter', sans-serif",
+    fontFamily: "'Inter', sans-serif"
   }),
-
   sendButton: (c, disabled) => ({
     background: c.secondary,
     color: "white",
@@ -671,6 +553,6 @@ const styles = {
     cursor: disabled ? "not-allowed" : "pointer",
     transition: "all 0.3s ease",
     boxShadow: "0 4px 12px rgba(13, 157, 184, 0.3)",
-    opacity: disabled ? 0.7 : 1,
-  }),
+    opacity: disabled ? 0.7 : 1
+  })
 };

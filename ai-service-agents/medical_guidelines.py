@@ -24,13 +24,11 @@ BP_ALERTS = {
     }
 }
 
-# Plausibility checks (doctor verified)
 BP_PLAUSIBILITY = {
     "systolic":  {"min": 60,  "max": 250},
     "diastolic": {"min": 30,  "max": 150},
 }
 
-# Elderly BP targets (>65 years) — AHA 2017
 BP_ELDERLY = {
     "target_systolic":  (130, 140),
     "target_diastolic": (70, 80),
@@ -40,36 +38,34 @@ BP_ELDERLY = {
 # ─── BLOOD GLUCOSE ────────────────────────────────────────────────
 GLUCOSE_RANGES = {
     "fasting": {
-        "normal":     (70, 99),
+        "normal":      (70, 99),
         "prediabetes": (100, 125),
-        "diabetes":   (126, 9999),
-        "hypo_alert": (0, 69),
+        "diabetes":    (126, 9999),
+        "hypo_alert":  (0, 69),
         "severe_hypo": (0, 53),
         "hyper_alert": (300, 9999),
         "severe_hyper": (400, 9999),
     },
     "post_meal": {
-        "normal":     (0, 139),
+        "normal":      (0, 139),
         "prediabetes": (140, 199),
-        "diabetes":   (200, 9999),
+        "diabetes":    (200, 9999),
     },
     "random": {
-        "normal":  (0, 139),
-        "diabetes": (200, 9999),  # with symptoms
+        "normal":   (0, 139),
+        "diabetes": (200, 9999),
     }
 }
 
-# HbA1c targets (ADA 2025)
 HBA1C = {
-    "normal":       (0, 5.6),
-    "prediabetes":  (5.7, 6.4),
-    "diabetes":     (6.5, 99),
-    "target_most_adults": 7.0,
-    "target_healthy":     6.5,
-    "target_elderly":     8.0,
+    "normal":              (0, 5.6),
+    "prediabetes":         (5.7, 6.4),
+    "diabetes":            (6.5, 99),
+    "target_most_adults":  7.0,
+    "target_healthy":      6.5,
+    "target_elderly":      8.0,
 }
 
-# Glycemic control levels (doctor verified)
 GLYCEMIC_CONTROL = {
     "fasting": {
         "good": (80, 130),
@@ -88,37 +84,34 @@ GLYCEMIC_CONTROL = {
     }
 }
 
-# Glucose plausibility
 GLUCOSE_PLAUSIBILITY = {"min": 20, "max": 600}
 
-# Gestational diabetes (ACOG 2023 / ADA)
 GESTATIONAL_GLUCOSE = {
     "fasting_max":   95,
     "1hr_post_meal": 140,
     "2hr_post_meal": 120,
 }
 
-# Elderly glucose targets (ADA 2025)
 GLUCOSE_ELDERLY = {
-    "fasting": (90, 130),
-    "post_meal_max": 180,
+    "fasting":        (90, 130),
+    "post_meal_max":  180,
     "note": "Individualized — avoid aggressive hypoglycemia treatment"
 }
 
 # ─── THYROID ──────────────────────────────────────────────────────
 THYROID_RANGES = {
     "tsh": {
-        "normal":               (0.5, 4.5),   # ATA 2017 adjusted
-        "subclinical_hypo":     (4.5, 10.0),
-        "overt_hypo":           (10.0, 9999),
-        "subclinical_hyper":    (0.1, 0.49),
-        "overt_hyper":          (0.0, 0.09),
+        "normal":            (0.5, 4.5),
+        "subclinical_hypo":  (4.5, 10.0),
+        "overt_hypo":        (10.0, 9999),
+        "subclinical_hyper": (0.1, 0.49),
+        "overt_hyper":       (0.0, 0.09),
     },
-    "free_t4":  {"normal": (0.8, 1.8), "unit": "ng/dL"},
+    "free_t4":  {"normal": (0.8, 1.8),  "unit": "ng/dL"},
     "total_t4": {"normal": (5.0, 12.0), "unit": "µg/dL"},
-    "free_t3":  {"normal": (2.3, 4.2), "unit": "pg/mL"},
-    "total_t3": {"normal": (80, 200),  "unit": "ng/dL"},
-    "anti_tpo": {"normal_max": 35,     "unit": "IU/mL"},
+    "free_t3":  {"normal": (2.3, 4.2),  "unit": "pg/mL"},
+    "total_t3": {"normal": (80, 200),   "unit": "ng/dL"},
+    "anti_tpo": {"normal_max": 35,      "unit": "IU/mL"},
 }
 
 THYROID_ALERTS = {
@@ -126,20 +119,18 @@ THYROID_ALERTS = {
     "urgent":  {"tsh_high": 10.0, "tsh_low": 0.1},
 }
 
-# Pregnancy TSH (trimester-specific)
 THYROID_PREGNANCY = {
     "trimester_1": (0.1, 2.5),
     "trimester_2": (0.2, 3.0),
     "trimester_3": (0.3, 3.0),
 }
 
-# TSH plausibility
 TSH_PLAUSIBILITY = {"min": 0.01, "max": 100}
 
 # ─── TREND ANALYSIS ──────────────────────────────────────────────
 TREND_THRESHOLDS = {
-    "blood_pressure": 5.0,   # 5% change = significant (doctor verified)
-    "blood_glucose":  10.0,  # 10% change = significant
+    "blood_pressure": 5.0,
+    "blood_glucose":  10.0,
     "tsh":            5.0,
     "weight":         5.0,
     "default":        5.0,
@@ -153,12 +144,12 @@ TREND_MIN_READINGS = {
 
 # ─── EMERGENCY THRESHOLDS ────────────────────────────────────────
 EMERGENCY_THRESHOLDS = {
-    "bp_crisis_systolic":   180,
-    "bp_crisis_diastolic":  120,
-    "severe_hypo":          54,
-    "severe_hyper":         400,
-    "tsh_urgent_high":      10.0,
-    "tsh_urgent_low":       0.1,
+    "bp_crisis_systolic":  180,
+    "bp_crisis_diastolic": 120,
+    "severe_hypo":         54,
+    "severe_hyper":        400,
+    "tsh_urgent_high":     10.0,
+    "tsh_urgent_low":      0.1,
 }
 
 # ─── MEDICATION SIDE EFFECTS ────────────────────────────────────

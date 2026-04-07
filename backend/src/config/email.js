@@ -4,7 +4,7 @@ const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
     user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS   // Gmail App Password
+    pass: process.env.EMAIL_PASS
   }
 })
 
@@ -20,7 +20,7 @@ export const sendOTPEmail = async (toEmail, otp, name) => {
         <p>Your OTP for password reset is:</p>
         <h1 style="letter-spacing: 8px; color: #0ea5e9;">${otp}</h1>
         <p>This OTP is valid for <b>10 minutes</b>.</p>
-        <p>If you did not request this, ignore this email.</p>
+        <p>If you did not request this, please ignore this email.</p>
       </div>
     `
   })

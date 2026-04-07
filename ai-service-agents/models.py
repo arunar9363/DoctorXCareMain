@@ -8,7 +8,7 @@ class PatientContext(BaseModel):
     gender: Optional[str] = None
     is_elderly: Optional[bool] = False
     is_pregnant: Optional[bool] = False
-    trimester: Optional[int] = None          # 1, 2, or 3
+    trimester: Optional[int] = None
     has_diabetes: Optional[bool] = False
     has_hypertension: Optional[bool] = False
     has_thyroid_disorder: Optional[bool] = False
@@ -21,8 +21,8 @@ class BPReading(BaseModel):
     systolic: float
     diastolic: float
     pulse: Optional[float] = None
-    date: Optional[str] = None               # ISO date string
-    context: Optional[str] = None            # e.g. "morning", "after meds"
+    date: Optional[str] = None
+    context: Optional[str] = None
 
 
 # ── GLUCOSE READING ───────────────────────────────────────────────
@@ -30,7 +30,7 @@ class GlucoseReading(BaseModel):
     value: float
     unit: Optional[str] = "mg/dL"
     date: Optional[str] = None
-    context: Optional[str] = "fasting"      # fasting / post_meal / random
+    context: Optional[str] = "fasting"
 
 
 # ── TSH READING ───────────────────────────────────────────────────
@@ -49,13 +49,13 @@ class HealthTrackingRequest(BaseModel):
     glucose_readings: Optional[List[GlucoseReading]] = []
     tsh_readings: Optional[List[TSHReading]] = []
     patient_context: Optional[PatientContext] = None
-    time_range: Optional[str] = None        # e.g. "7_day", "30_day", "90_day"
+    time_range: Optional[str] = None
 
 
 # ── LAB REPORT REQUEST ────────────────────────────────────────────
 class LabReportRequest(BaseModel):
     report_text: str
-    report_type: Optional[str] = "general"  # blood, imaging, urine, general
+    report_type: Optional[str] = "general"
     patient_name: Optional[str] = None
     patient_age: Optional[int] = None
     patient_gender: Optional[str] = None
@@ -66,5 +66,5 @@ class LabReportRequest(BaseModel):
 class DoctorSearchRequest(BaseModel):
     latitude: float
     longitude: float
-    facility_type: Optional[str] = "hospital"   # hospital, clinic, pharmacy
-    radius: Optional[int] = 5000                # metres
+    facility_type: Optional[str] = "hospital"
+    radius: Optional[int] = 5000

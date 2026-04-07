@@ -52,30 +52,30 @@ def classify_glucose(value: float, context: str = "fasting") -> str:
         return "HYPERGLYCEMIA_ALERT"
 
     if context == "fasting":
-        if value <= 99:   return "NORMAL"
+        if value <= 99:    return "NORMAL"
         elif value <= 125: return "PREDIABETES"
         else:              return "DIABETES"
     elif context == "post_meal":
-        if value < 140:   return "NORMAL"
-        elif value < 200: return "PREDIABETES"
+        if value < 140:    return "NORMAL"
+        elif value < 200:  return "PREDIABETES"
         else:              return "DIABETES"
     return "UNKNOWN"
 
 
 def classify_tsh(value: float) -> str:
-    if value >= 10.0:    return "OVERT_HYPOTHYROIDISM"
-    elif value >= 4.5:   return "SUBCLINICAL_HYPOTHYROIDISM"
-    elif value >= 0.5:   return "NORMAL"
-    elif value >= 0.1:   return "SUBCLINICAL_HYPERTHYROIDISM"
-    else:                return "OVERT_HYPERTHYROIDISM"
+    if value >= 10.0:   return "OVERT_HYPOTHYROIDISM"
+    elif value >= 4.5:  return "SUBCLINICAL_HYPOTHYROIDISM"
+    elif value >= 0.5:  return "NORMAL"
+    elif value >= 0.1:  return "SUBCLINICAL_HYPERTHYROIDISM"
+    else:               return "OVERT_HYPERTHYROIDISM"
 
 
 def get_alert_level(classification: str) -> str:
-    urgent = {"HYPERTENSIVE_CRISIS", "SEVERE_HYPOGLYCEMIA",
-              "SEVERE_HYPERGLYCEMIA", "OVERT_HYPOTHYROIDISM", "OVERT_HYPERTHYROIDISM"}
+    urgent  = {"HYPERTENSIVE_CRISIS", "SEVERE_HYPOGLYCEMIA",
+               "SEVERE_HYPERGLYCEMIA", "OVERT_HYPOTHYROIDISM", "OVERT_HYPERTHYROIDISM"}
     warning = {"STAGE2_HYPERTENSION", "HYPOGLYCEMIA", "HYPERGLYCEMIA_ALERT",
                "DIABETES", "SUBCLINICAL_HYPOTHYROIDISM", "SUBCLINICAL_HYPERTHYROIDISM"}
-    notice = {"STAGE1_HYPERTENSION", "ELEVATED", "PREDIABETES"}
+    notice  = {"STAGE1_HYPERTENSION", "ELEVATED", "PREDIABETES"}
 
     if classification in urgent:  return "URGENT"
     if classification in warning: return "WARNING"

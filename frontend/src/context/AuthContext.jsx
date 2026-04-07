@@ -1,15 +1,23 @@
-import { createContext, useState, useEffect, useCallback } from 'react'
+import { createContext, useState, useEffect, useCallback, useContext } from 'react'
 import { getMeAPI } from '../api/auth.api.js'
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const AuthContext = createContext(null)
 
-export const AuthProvider = ({ children }) => {
+// eslint-disable-next-line react-refresh/only-export-components
+export const useAuth = () => {
+  const context = useContext(AuthContext)
+  if (!context) throw new Error('useAuth must be used inside AuthProvider')
+  return context
+}
+
+export function AuthProvider(props) {
+  const children = props.children
+
   const [user, setUser] = useState(null)
-  const [token, setToken] = useState(localStorage.getItem('token') || null)
+  const [token, setToken] = useState(() => localStorage.getItem('token') || null)
   const [loading, setLoading] = useState(true)
 
-  // App start hone par token se user fetch karo
   useEffect(() => {
     const initAuth = async () => {
       const savedToken = localStorage.getItem('token')
@@ -18,9 +26,7 @@ export const AuthProvider = ({ children }) => {
           const data = await getMeAPI()
           setUser(data.data?.user || data.user || data)
           setToken(savedToken)
-        // eslint-disable-next-line no-unused-vars
-        } catch (err) {
-          // Token invalid/expired
+        } catch {
           localStorage.removeItem('token')
           localStorage.removeItem('user')
           setUser(null)
@@ -32,15 +38,24 @@ export const AuthProvider = ({ children }) => {
     initAuth()
   }, [])
 
-  // Login — token + user save karo
-  const login = useCallback((userData, jwtToken) => {
+  // Handles both call styles:
+  // login(token, user)  ← RegisterPage
+  // login(user, token)  ← LoginModal
+  const login = useCallback((firstArg, secondArg) => {
+    let jwtToken, userData
+    if (typeof firstArg === 'string') {
+      jwtToken = firstArg
+      userData = secondArg
+    } else {
+      userData = firstArg
+      jwtToken = secondArg
+    }
     localStorage.setItem('token', jwtToken)
     localStorage.setItem('user', JSON.stringify(userData))
-    setUser(userData)
     setToken(jwtToken)
+    setUser(userData)
   }, [])
 
-  // Logout
   const logout = useCallback(() => {
     localStorage.removeItem('token')
     localStorage.removeItem('user')
@@ -48,10 +63,12 @@ export const AuthProvider = ({ children }) => {
     setToken(null)
   }, [])
 
-  // Profile update hone par user state refresh karo
-  const updateUser = useCallback((updatedUser) => {
-    localStorage.setItem('user', JSON.stringify(updatedUser))
-    setUser(updatedUser)
+  const updateUser = useCallback((updatedFields) => {
+    setUser(prev => {
+      const updated = { ...prev, ...updatedFields }
+      localStorage.setItem('user', JSON.stringify(updated))
+      return updated
+    })
   }, [])
 
   const value = {

@@ -2,18 +2,15 @@ from fastapi import FastAPI, HTTPException, Header, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 import os
+import json
 from dotenv import load_dotenv
 
 from models import (
     HealthTrackingRequest, LabReportRequest,
-    DoctorSearchRequest, PatientContext
+    DoctorSearchRequest
 )
-from lab_agent import get_medical_agent
-from tracking_agent import (
-    get_health_tracking_agent,
-    get_trend_visualization_agent,
-    get_report_extraction_agent
-)
+from lab_agent import analyze_lab_report, extract_report_data
+from tracking_agent import analyze_health_tracking, get_trend_insights
 from DoctorFinder import get_nearby_facilities, get_place_details
 from validators import validate_bp, validate_glucose, validate_tsh
 from config import config
@@ -25,15 +22,15 @@ BACKEND_SECRET = os.getenv("BACKEND_SECRET_KEY", "doctorxcare_secret")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    print("DoctorXCare AI Service starting...")
+    print("DoctorXCare AI Service starting... (Powered by Groq AI)")
     yield
     print("DoctorXCare AI Service shutting down...")
 
 
 app = FastAPI(
     title="DoctorXCare AI Service",
-    version="2.0.0",
-    description="Doctor-verified AI agents for medical analysis",
+    version="3.0.0",
+    description="Doctor-verified AI agents powered by Groq — medical analysis, health tracking, specialist finder",
     lifespan=lifespan
 )
 
@@ -47,7 +44,7 @@ app.add_middleware(
 
 def verify_backend(x_backend_secret: str = Header(None)):
     if x_backend_secret != BACKEND_SECRET:
-        raise HTTPException(status_code=401, detail="Unauthorized")
+        raise HTTPException(status_code=401, detail="Unauthorized — invalid backend secret")
 
 
 # ── HEALTH CHECK ──────────────────────────────────────────────────
@@ -55,34 +52,36 @@ def verify_backend(x_backend_secret: str = Header(None)):
 async def health():
     return {
         "status": "OK",
-        "service": "DoctorXCare AI Service v2.0",
+        "service": "DoctorXCare AI Service v3.0",
+        "ai_provider": "Groq (llama-3.3-70b-versatile)",
+        "hospital_finder": "Google Places API",
         "guidelines": "ACC/AHA 2017, ADA 2025, ATA 2017",
         "verified_by": "Medical Adviser Jayshree"
     }
 
 
-# ── LAB REPORT ANALYSIS ──────────────────────────────────────────
+# ── LAB REPORT ANALYSIS (TEXT) ───────────────────────────────────
 @app.post("/lab/analyze")
-async def analyze_lab_report(
+async def analyze_lab_report_endpoint(
     request: LabReportRequest,
     x_backend_secret: str = Header(None)
 ):
     verify_backend(x_backend_secret)
     try:
-        agent = get_medical_agent()
-        prompt = f"""
-Analyze this medical report:
-Patient: {request.patient_name or 'Unknown'}, Age: {request.patient_age or 'Unknown'}, Gender: {request.patient_gender or 'Unknown'}
-Report Type: {request.report_type}
-Report Content:
-{request.report_text}
-"""
-        result = agent.run(prompt)
+        analysis = analyze_lab_report(
+            report_text=request.report_text,
+            patient_name=request.patient_name,
+            patient_age=request.patient_age,
+            patient_gender=request.patient_gender,
+            report_type=request.report_type or "general"
+        )
         return {
             "success": True,
-            "analysis": result.content,
+            "analysis": analysis,
             "report_type": request.report_type
         }
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -95,93 +94,117 @@ async def analyze_lab_image(
 ):
     verify_backend(x_backend_secret)
     try:
-        import base64
+        # Read file content and convert to text description for Groq
         content = await file.read()
-        b64 = base64.b64encode(content).decode()
+        file_size_kb = len(content) / 1024
 
-        agent = get_medical_agent()
-        result = agent.run(
-            f"Analyze this medical report image and provide structured analysis.",
-            images=[{"data": b64, "media_type": file.content_type}]
-        )
-        return {"success": True, "analysis": result.content}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-# ── HEALTH TRACKING ───────────────────────────────────────────────
-@app.post("/tracking/analyze")
-async def analyze_health_tracking(
-    request: HealthTrackingRequest,
-    x_backend_secret: str = Header(None)
-):
-    verify_backend(x_backend_secret)
-    try:
-        # Validate readings
-        validation_errors = []
-        for bp in request.bp_readings:
-            result = validate_bp(bp.systolic, bp.diastolic)
-            if not result["valid"]:
-                validation_errors.extend(result["errors"])
-
-        for g in request.glucose_readings:
-            result = validate_glucose(g.value)
-            if not result["valid"]:
-                validation_errors.extend(result["errors"])
-
-        for t in request.tsh_readings:
-            result = validate_tsh(t.value)
-            if not result["valid"]:
-                validation_errors.extend(result["errors"])
-
-        agent = get_health_tracking_agent()
-        prompt = f"""
-Analyze these health readings:
-Condition: {request.condition}
-Patient Context: {request.patient_context.dict() if request.patient_context else 'Not provided'}
-
-Blood Pressure Readings ({len(request.bp_readings)} total):
-{[r.dict() for r in request.bp_readings]}
-
-Glucose Readings ({len(request.glucose_readings)} total):
-{[r.dict() for r in request.glucose_readings]}
-
-TSH Readings ({len(request.tsh_readings)} total):
-{[r.dict() for r in request.tsh_readings]}
-
-Validation Notes: {validation_errors if validation_errors else 'All values plausible'}
-"""
-        result = agent.run(prompt)
+        # Groq doesn't support direct image input — ask user to provide text
+        # We inform the frontend to use OCR or text-based upload
         return {
-            "success": True,
-            "analysis": result.content,
-            "validation_warnings": validation_errors
+            "success": False,
+            "error": "Image analysis requires text extraction. Please copy the report text and use /lab/analyze instead.",
+            "hint": "Use a PDF reader or OCR tool to extract text from your report, then submit as text."
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# ── EXTRACT DATA FROM REPORT ──────────────────────────────────────
+# ── HEALTH TRACKING ANALYSIS ──────────────────────────────────────
+@app.post("/tracking/analyze")
+async def analyze_health_tracking_endpoint(
+    request: HealthTrackingRequest,
+    x_backend_secret: str = Header(None)
+):
+    verify_backend(x_backend_secret)
+    try:
+        # Validate readings first
+        validation_errors = []
+
+        for bp in (request.bp_readings or []):
+            result = validate_bp(bp.systolic, bp.diastolic)
+            if not result["valid"]:
+                validation_errors.extend(result["errors"])
+
+        for g in (request.glucose_readings or []):
+            result = validate_glucose(g.value)
+            if not result["valid"]:
+                validation_errors.extend(result["errors"])
+
+        for t in (request.tsh_readings or []):
+            result = validate_tsh(t.value)
+            if not result["valid"]:
+                validation_errors.extend(result["errors"])
+
+        patient_ctx = request.patient_context.dict() if request.patient_context else None
+
+        analysis = analyze_health_tracking(
+            condition=request.condition,
+            bp_readings=[r.dict() for r in (request.bp_readings or [])],
+            glucose_readings=[r.dict() for r in (request.glucose_readings or [])],
+            tsh_readings=[r.dict() for r in (request.tsh_readings or [])],
+            patient_context=patient_ctx,
+            time_range=request.time_range,
+            validation_errors=validation_errors if validation_errors else None
+        )
+
+        return {
+            "success": True,
+            "analysis": analysis,
+            "validation_warnings": validation_errors
+        }
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ── EXTRACT DATA FROM REPORT TEXT ────────────────────────────────
 @app.post("/tracking/extract")
-async def extract_report_data(
+async def extract_report_data_endpoint(
     request: LabReportRequest,
     x_backend_secret: str = Header(None)
 ):
     verify_backend(x_backend_secret)
     try:
-        agent = get_report_extraction_agent()
-        result = agent.run(f"Extract all health data from this report:\n{request.report_text}")
-        import json
+        raw = extract_report_data(request.report_text)
         try:
-            data = json.loads(result.content)
-        except:
-            data = {"raw": result.content}
+            # Strip markdown code fences if present
+            cleaned = raw.strip()
+            if cleaned.startswith("```"):
+                cleaned = cleaned.split("```")[1]
+                if cleaned.startswith("json"):
+                    cleaned = cleaned[4:]
+            data = json.loads(cleaned.strip())
+        except json.JSONDecodeError:
+            data = {"raw": raw}
         return {"success": True, "extracted_data": data}
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# ── DOCTOR/FACILITY FINDER ────────────────────────────────────────
+# ── TREND INSIGHTS ────────────────────────────────────────────────
+@app.post("/tracking/trends")
+async def get_trends_endpoint(
+    request: HealthTrackingRequest,
+    x_backend_secret: str = Header(None)
+):
+    verify_backend(x_backend_secret)
+    try:
+        health_data = {
+            "condition": request.condition,
+            "bp_readings": [r.dict() for r in (request.bp_readings or [])],
+            "glucose_readings": [r.dict() for r in (request.glucose_readings or [])],
+            "tsh_readings": [r.dict() for r in (request.tsh_readings or [])],
+        }
+        insights = get_trend_insights(str(health_data))
+        return {"success": True, "insights": insights}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ── DOCTOR / FACILITY FINDER (Google Maps) ────────────────────────
 @app.post("/doctor/nearby")
 async def find_nearby_doctors(
     request: DoctorSearchRequest,
@@ -224,3 +247,8 @@ async def validate_blood_pressure(systolic: float, diastolic: float):
 @app.post("/validate/glucose")
 async def validate_blood_glucose(value: float):
     return validate_glucose(value)
+
+
+@app.post("/validate/tsh")
+async def validate_tsh_endpoint(value: float):
+    return validate_tsh(value)

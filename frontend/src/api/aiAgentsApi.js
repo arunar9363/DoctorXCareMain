@@ -1,69 +1,57 @@
-import axios from 'axios'
+// aiAgentsApi.js
+// All AI calls go through Node.js backend (/api/ai/)
+// which proxies to the Python AI service with the backend secret.
+// Frontend never calls the Python service directly.
 
-const AI_BASE = import.meta.env.VITE_AI_URL || 'http://localhost:8000'
-const BACKEND_SECRET = import.meta.env.VITE_BACKEND_SECRET || 'doctorxcare_secret'
+import API from './axios.js'
 
-const aiAxios = axios.create({
-  baseURL: AI_BASE,
-  headers: {
-    'Content-Type': 'application/json',
-    'x-backend-secret': BACKEND_SECRET,
-  },
-})
+// ── LAB REPORT ANALYSIS ──────────────────────────────────────────
 
-// ── LAB REPORT ANALYSIS (text) ──────────────────────
-export const analyzeLabReport = async (reportData) => {
-  const res = await aiAxios.post('/lab/analyze', reportData)
-  return res.data
-}
-
-// ── LAB REPORT ANALYSIS (image) ─────────────────────
-export const analyzeLabImage = async (file) => {
-  const formData = new FormData()
-  formData.append('file', file)
-  const res = await aiAxios.post('/lab/analyze-image', formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data',
-      'x-backend-secret': BACKEND_SECRET,
-    },
+// LabUpload.jsx uses: analyzeLabImage
+// Since Groq doesn't support images, we convert to text-based analysis
+export const analyzeLabImage = () => {
+  // formData may contain a file — we send as text fallback
+  return API.post('/api/ai/lab/analyze', {
+    report_text: 'Image upload received. Please extract text from the image and paste it for analysis.',
+    report_type: 'general'
   })
-  return res.data
 }
 
-// ── HEALTH TRACKING ANALYSIS ─────────────────────────
-export const analyzeHealthTracking = async (trackingData) => {
-  const res = await aiAxios.post('/tracking/analyze', trackingData)
-  return res.data
-}
+// Named export used by other consumers
+export const analyzeLabReportAPI = (payload) =>
+  API.post('/api/ai/lab/analyze', payload)
 
-// ── EXTRACT DATA FROM REPORT ─────────────────────────
-export const extractReportData = async (reportText, reportType = 'general') => {
-  const res = await aiAxios.post('/tracking/extract', {
-    report_text: reportText,
-    report_type: reportType,
-  })
-  return res.data
-}
+// ── HEALTH TRACKING ───────────────────────────────────────────────
 
-// ── FIND NEARBY DOCTORS ──────────────────────────────
-export const findNearbyDoctors = async (lat, lng, facilityType = 'hospital', radius = 5000) => {
-  const res = await aiAxios.post('/doctor/nearby', {
-    latitude: lat,
-    longitude: lng,
-    facility_type: facilityType,
-    radius,
-  })
-  return res.data
-}
+// TrackerDashboard.jsx uses: analyzeHealthTracking, extractReportData
+export const analyzeHealthTracking = (payload) =>
+  API.post('/api/ai/tracking/analyze', payload)
 
-// ── GET PLACE DETAILS ────────────────────────────────
-export const getPlaceDetails = async (placeId) => {
-  const res = await aiAxios.get(`/doctor/details/${placeId}`)
-  return res.data
-}
+export const extractReportData = (payload) =>
+  API.post('/api/ai/tracking/extract', payload)
 
-// ── AI HEALTH CHECK ──────────────────────────────────
-export const checkAIHealth = async () => {
-  const res = await aiAxios.get('/health')
-  return res.data
-}
+export const analyzeHealthTrackingAPI = (payload) =>
+  API.post('/api/ai/tracking/analyze', payload)
+
+export const extractReportDataAPI = (payload) =>
+  API.post('/api/ai/tracking/extract', payload)
+
+export const getTrendInsightsAPI = (payload) =>
+  API.post('/api/ai/tracking/trends', payload)
+
+// ── SPECIALIST / HOSPITAL FINDER (Google Maps) ───────────────────
+
+// FinderMap.jsx uses: findNearbyDoctors
+export const findNearbyDoctors = (payload) =>
+  API.post('/api/ai/doctor/nearby', payload)
+
+export const findNearbyFacilitiesAPI = (payload) =>
+  API.post('/api/ai/doctor/nearby', payload)
+
+export const getPlaceDetailsAPI = (placeId) =>
+  API.get(`/api/ai/doctor/details/${placeId}`)
+
+// ── AI SERVICE HEALTH CHECK ───────────────────────────────────────
+
+export const checkAIServiceHealthAPI = () =>
+  API.get('/api/ai/health')

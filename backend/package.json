@@ -1,6 +1,6 @@
 {
-  "name": "backend",
-  "version": "1.0.0",
+  "name": "doctorxcare-backend",
+  "version": "2.0.0",
   "type": "module",
   "main": "src/app.js",
   "scripts": {
@@ -9,26 +9,20 @@
     "seed:diseases": "node src/models/seedDiseases.js",
     "seed:feedbacks": "node src/models/seedFeedbacks.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
   "dependencies": {
-    "@google/generative-ai": "^0.24.1",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.6",
-    "crypto": "^1.0.1",
-    "dotenv": "^17.3.1",
-    "express": "^5.2.1",
-    "express-validator": "^7.3.1",
-    "google-auth-library": "^10.6.1",
-    "helmet": "^8.1.0",
-    "jsonwebtoken": "^9.0.3",
-    "mongoose": "^9.3.0",
-    "morgan": "^1.10.1",
-    "nodemailer": "^8.0.2"
+    "dotenv": "^16.4.5",
+    "express": "^4.18.2",
+    "google-auth-library": "^9.6.3",
+    "groq-sdk": "^0.3.3",
+    "helmet": "^7.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.2.1",
+    "morgan": "^1.10.0",
+    "nodemailer": "^6.9.12"
   },
   "devDependencies": {
-    "nodemon": "^3.1.14"
+    "nodemon": "^3.1.0"
   }
 }
