@@ -277,7 +277,7 @@ export default function DoctorXAIPage() {
                 </p>
                 {user && (
                   <p style={{ color: c.secondary, fontSize: "12px", marginTop: "8px", fontWeight: 600 }}>
-                    ✓ Logged in — conversations saved & AI remembers your history
+                    ✓ Logged in — conversations saved & AI remembers your history.
                   </p>
                 )}
                 <div style={styles.suggestionBox(c)}>
